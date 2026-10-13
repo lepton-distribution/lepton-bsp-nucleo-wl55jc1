@@ -1,6 +1,6 @@
 /*
  * Configuration applicative de la carte NUCLEO-WL55JC1 (étape 6). Les axes (micro-noyau,
- * cœur, puce, nom uname) sont posés par CMake (cmake/kal, cmake/cpu, cmake/boards), pas ici.
+ * cœur, puce, nom uname) sont posés par CMake (cmake/kal, cmake/cpu, manifeste et CMakeLists.txt du BSP), pas ici.
  * 64 Ko de RAM, sans réseau : profil minimal du noyau, rootfs et tampons stdio du portage IAR
  * (src/arch/st-stm32wl55jci-nucleo, inchangé).
  */
@@ -28,6 +28,6 @@
 #define __KERNEL_DEV_TTY "/dev/ttys2"
 
 //configuration de la carte (fréquences, priorités)
-#include "kernel/dev/bsp/stm32wl55jci_nucleo/stm32wl55jci_nucleo.h"
+#include "kernel/dev/bsp/nucleo-wl55jc1/stm32wl55jci_nucleo.h"
 
 #endif

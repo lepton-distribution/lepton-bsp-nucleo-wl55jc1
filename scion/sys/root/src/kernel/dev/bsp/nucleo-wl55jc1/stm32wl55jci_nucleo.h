@@ -2,7 +2,7 @@
  * Lepton — BSP de la carte NUCLEO-WL55JC1 (STM32WL55JC, Cortex-M4 du CPU1, étape 6).
  * Licence : voir LICENSE (MPL 1.1).
  *
- * Seul endroit (avec cmake/boards et ld/mem_nucleo-wl55jc1.ld) où figurent fréquences et réglages
+ * Seul endroit (avec le manifeste du BSP et ld/mem_nucleo-wl55jc1.ld) où figurent fréquences et réglages
  * de la carte. Références : SystemClock_Config du portage IAR (dev_stm32wlxx_cpu_x.c : MSI range
  * 11, sans PLL, AHB/APB /1, latence flash 2, échelle de tension 1), RM0453. Inclus par
  * user_kernel_mkconf.h : aucun en-tête ST ici.

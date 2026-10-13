@@ -46,7 +46,7 @@ Includes
 
 #include "stm32wlxx_hal.h"
 
-#include "kernel/dev/bsp/stm32wl55jci_nucleo/dev_stm32wl55jci_nucleo_board/dev_stm32wl55jci_nucleo_board.h"
+#include "kernel/dev/bsp/nucleo-wl55jc1/dev_stm32wl55jci_nucleo_board/dev_stm32wl55jci_nucleo_board.h"
 
 /*===========================================
 Global Declaration
