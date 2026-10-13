@@ -1,0 +1,40 @@
+{
+  "nom": "nucleo-wl55jc1",
+  "type": "bsp",
+  "version": "1.0.0",
+  "description": "Carte NUCLEO-WL55JC1 (STM32WL55JC, Cortex-M4 du CPU1 sans FPU, Cortex-M0+ jamais démarré) : MSI 48 MHz ; USART2 console ttys2 (STLINK-V3) ; radio Sub-GHz /dev/radio (FSK 868 MHz, pilote du portage IAR, adaptation de la carte stm32_radio_target).",
+  "destination": "kernel/dev/bsp/nucleo-wl55jc1",
+  "bibliotheque": "bsp",
+  "famille": "stm32wlxx",
+  "coeur": "cortex-m4f",
+  "abi_flottante": "soft",
+  "mcu": "STM32WL55JC",
+  "frequence_cpu": 48000000,
+  "entete_config_noyau": "include/user_kernel_mkconf.h",
+  "script_liens": "ld/mem_nucleo-wl55jc1.ld",
+  "demarrage": [
+    "stm32wl55jci_nucleo_system.c"
+  ],
+  "sources": [
+    "dev_stm32wl55jci_nucleo_peripherals/dev_stm32wl55jci_nucleo_usart_2.c",
+    "dev_stm32wl55jci_nucleo_radio/dev_stm32wl55jci_nucleo_radio.c",
+    "dev_stm32wl55jci_nucleo_radio/stm32wlxx_nucleo_radio.c",
+    "stm32_radio_target/radio_board_if.c"
+  ],
+  "openocd": [
+    "debug/openocd-nucleo-wl55jc1.cfg"
+  ],
+  "sonde": "stlink",
+  "compilation": {
+    "publique": {
+      "definitions": [
+        "STM32WL55xx",
+        "CORE_CM4"
+      ],
+      "inclusions": [
+        "kernel/dev/bsp/nucleo-wl55jc1/dev_stm32wl55jci_nucleo_radio",
+        "kernel/dev/bsp/nucleo-wl55jc1/stm32_radio_target"
+      ]
+    }
+  }
+}

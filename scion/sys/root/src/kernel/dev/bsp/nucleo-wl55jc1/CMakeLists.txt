@@ -1,0 +1,54 @@
+# BSP nucleo-wl55jc1 : paramètres hors manifeste (PA-7 Q3), inclus par le CMakeLists.txt racine
+# du greffon noyau quand LEPTON_BOARD=nucleo-wl55jc1. XML mklepton : LEPTON_MKCONF du preset.
+# Lepton sur le CPU1 (Cortex-M4) seul, CPU2 jamais démarré (décision 2026-10-05).
+# DEV_ID 0x497, CPUID 0x410FC241, flash 256 Ko, RDP 0, ESE 0, relus par la sonde (2026-10-05).
+set(LEPTON_BOARD_UNAME_MACHINE cortexM4-stm32wlxx)
+# nom vu par uname : posé ici, sans entrée dans la table de kernelconf.h (ajout-coeur.md §4)
+target_compile_definitions(lepton_options INTERFACE
+  __KERNEL_CPU_DEVICE_NAME="${LEPTON_BOARD_UNAME_MACHINE}")
+
+# carte réelle : console série du STLINK-V3 et sonde OpenOCD. Deux cartes identiques sur le banc
+# (radio) : la sonde est choisie par son numéro de série. La cfg statique du BSP (champ openocd du
+# manifeste, posée par le lecteur dans LEPTON_BOARD_OPENOCD_CFG) est sourcée par une cfg générée
+# dans le répertoire de build, qui la remplace pour la cible flash et les tests.
+set(LEPTON_BOARD_STLINK_SERIAL "" CACHE STRING
+    "Numéro de série du STLINK-V3 de la carte (vide : première sonde trouvée)")
+set(lepton_wl_cfg_bsp ${LEPTON_BOARD_OPENOCD_CFG})
+set(LEPTON_BOARD_OPENOCD_CFG ${CMAKE_BINARY_DIR}/openocd-nucleo-wl55jc1.cfg)
+if(LEPTON_BOARD_STLINK_SERIAL)
+  set(lepton_wl_serial "adapter serial ${LEPTON_BOARD_STLINK_SERIAL}\n")
+else()
+  set(lepton_wl_serial "")
+endif()
+file(WRITE ${LEPTON_BOARD_OPENOCD_CFG}
+  "# généré par le CMakeLists.txt du BSP nucleo-wl55jc1\n"
+  "source [find interface/stlink.cfg]\n${lepton_wl_serial}"
+  "source ${lepton_wl_cfg_bsp}\n")
+set(LEPTON_BOARD_SERIAL_PORT "" CACHE STRING
+    "Port série de la console de la carte (ex. /dev/ttyACM0) : active le test de fumée sur carte")
+
+# test radio entre deux cartes (labels board et radio, tests/board_radio.py) : la même image est
+# flashée sur cette carte et sur la carte paire, désignée par son STLINK-V3 et sa console ; vides :
+# le test n'est pas créé
+set(LEPTON_RADIO_PEER_STLINK_SERIAL "" CACHE STRING
+    "Numéro de série du STLINK-V3 de la carte paire (test radio)")
+set(LEPTON_RADIO_PEER_SERIAL_PORT "" CACHE STRING
+    "Console de la carte paire (test radio, ex. /dev/ttyACM1)")
+if(LEPTON_BOARD_SERIAL_PORT AND LEPTON_RADIO_PEER_STLINK_SERIAL AND LEPTON_RADIO_PEER_SERIAL_PORT)
+  find_program(LEPTON_OPENOCD openocd)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  set(lepton_wl_peer_cfg ${CMAKE_BINARY_DIR}/openocd-nucleo-wl55jc1-paire.cfg)
+  file(WRITE ${lepton_wl_peer_cfg}
+    "# généré par le CMakeLists.txt du BSP nucleo-wl55jc1 (carte paire du test radio)\n"
+    "source [find interface/stlink.cfg]\nadapter serial ${LEPTON_RADIO_PEER_STLINK_SERIAL}\n"
+    "source ${lepton_wl_cfg_bsp}\n")
+  add_test(NAME board.radio
+           COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/board_radio.py
+                   --port-a ${LEPTON_BOARD_SERIAL_PORT} --port-b ${LEPTON_RADIO_PEER_SERIAL_PORT}
+                   --reset-a "${LEPTON_OPENOCD} -f ${LEPTON_BOARD_OPENOCD_CFG} -c \"program $<TARGET_FILE:lepton> verify reset exit\""
+                   --reset-b "${LEPTON_OPENOCD} -f ${lepton_wl_peer_cfg} -c \"program $<TARGET_FILE:lepton> verify reset exit\""
+                   --log ${CMAKE_BINARY_DIR}/board_radio.log)
+  set_tests_properties(board.radio PROPERTIES
+                       LABELS "board;radio;arch:${LEPTON_CPU};backend:${LEPTON_KAL_BACKEND}"
+                       TIMEOUT 300 RUN_SERIAL TRUE ENVIRONMENT PYTHONDONTWRITEBYTECODE=1)
+endif()
