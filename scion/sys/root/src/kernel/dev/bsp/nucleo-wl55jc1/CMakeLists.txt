@@ -9,8 +9,9 @@ target_compile_definitions(lepton_options INTERFACE
 
 # carte réelle : console série du STLINK-V3 et sonde OpenOCD. Deux cartes identiques sur le banc
 # (radio) : la sonde est choisie par son numéro de série. La cfg statique du BSP (champ openocd du
-# manifeste, posée par le lecteur dans LEPTON_BOARD_OPENOCD_CFG) est sourcée par une cfg générée
-# dans le répertoire de build, qui la remplace pour la cible flash et les tests.
+# manifeste, posée par le lecteur dans LEPTON_BOARD_OPENOCD_CFG, autonome depuis ENV-9) est sourcée
+# par une cfg générée dans le répertoire de build, qui y ajoute le numéro de série et la remplace
+# pour la cible flash et les tests.
 set(LEPTON_BOARD_STLINK_SERIAL "" CACHE STRING
     "Numéro de série du STLINK-V3 de la carte (vide : première sonde trouvée)")
 set(lepton_wl_cfg_bsp ${LEPTON_BOARD_OPENOCD_CFG})
@@ -22,8 +23,7 @@ else()
 endif()
 file(WRITE ${LEPTON_BOARD_OPENOCD_CFG}
   "# généré par le CMakeLists.txt du BSP nucleo-wl55jc1\n"
-  "source [find interface/stlink.cfg]\n${lepton_wl_serial}"
-  "source ${lepton_wl_cfg_bsp}\n")
+  "source ${lepton_wl_cfg_bsp}\n${lepton_wl_serial}")
 set(LEPTON_BOARD_SERIAL_PORT "" CACHE STRING
     "Port série de la console de la carte (ex. /dev/ttyACM0) : active le test de fumée sur carte")
 
@@ -40,8 +40,7 @@ if(LEPTON_BOARD_SERIAL_PORT AND LEPTON_RADIO_PEER_STLINK_SERIAL AND LEPTON_RADIO
   set(lepton_wl_peer_cfg ${CMAKE_BINARY_DIR}/openocd-nucleo-wl55jc1-paire.cfg)
   file(WRITE ${lepton_wl_peer_cfg}
     "# généré par le CMakeLists.txt du BSP nucleo-wl55jc1 (carte paire du test radio)\n"
-    "source [find interface/stlink.cfg]\nadapter serial ${LEPTON_RADIO_PEER_STLINK_SERIAL}\n"
-    "source ${lepton_wl_cfg_bsp}\n")
+    "source ${lepton_wl_cfg_bsp}\nadapter serial ${LEPTON_RADIO_PEER_STLINK_SERIAL}\n")
   add_test(NAME board.radio
            COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/board_radio.py
                    --port-a ${LEPTON_BOARD_SERIAL_PORT} --port-b ${LEPTON_RADIO_PEER_SERIAL_PORT}
