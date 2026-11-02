@@ -25,6 +25,9 @@
     "debug/openocd-nucleo-wl55jc1.cfg"
   ],
   "sonde": "stlink",
+  "svd": {
+    "famille": "svd/STM32WL5x_CM4.svd"
+  },
   "compilation": {
     "publique": {
       "definitions": [
