@@ -27,27 +27,5 @@ file(WRITE ${LEPTON_BOARD_OPENOCD_CFG}
 set(LEPTON_BOARD_SERIAL_PORT "" CACHE STRING
     "Port série de la console de la carte (ex. /dev/ttyACM0) : active le test de fumée sur carte")
 
-# test radio entre deux cartes (labels board et radio, tests/board_radio.py) : la même image est
-# flashée sur cette carte et sur la carte paire, désignée par son STLINK-V3 et sa console ; vides :
-# le test n'est pas créé
-set(LEPTON_RADIO_PEER_STLINK_SERIAL "" CACHE STRING
-    "Numéro de série du STLINK-V3 de la carte paire (test radio)")
-set(LEPTON_RADIO_PEER_SERIAL_PORT "" CACHE STRING
-    "Console de la carte paire (test radio, ex. /dev/ttyACM1)")
-if(LEPTON_BOARD_SERIAL_PORT AND LEPTON_RADIO_PEER_STLINK_SERIAL AND LEPTON_RADIO_PEER_SERIAL_PORT)
-  find_program(LEPTON_OPENOCD openocd)
-  find_package(Python3 REQUIRED COMPONENTS Interpreter)
-  set(lepton_wl_peer_cfg ${CMAKE_BINARY_DIR}/openocd-nucleo-wl55jc1-paire.cfg)
-  file(WRITE ${lepton_wl_peer_cfg}
-    "# généré par le CMakeLists.txt du BSP nucleo-wl55jc1 (carte paire du test radio)\n"
-    "source ${lepton_wl_cfg_bsp}\nadapter serial ${LEPTON_RADIO_PEER_STLINK_SERIAL}\n")
-  add_test(NAME board.radio
-           COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/board_radio.py
-                   --port-a ${LEPTON_BOARD_SERIAL_PORT} --port-b ${LEPTON_RADIO_PEER_SERIAL_PORT}
-                   --reset-a "${LEPTON_OPENOCD} -f ${LEPTON_BOARD_OPENOCD_CFG} -c \"program $<TARGET_FILE:lepton> verify reset exit\""
-                   --reset-b "${LEPTON_OPENOCD} -f ${lepton_wl_peer_cfg} -c \"program $<TARGET_FILE:lepton> verify reset exit\""
-                   --log ${CMAKE_BINARY_DIR}/board_radio.log)
-  set_tests_properties(board.radio PROPERTIES
-                       LABELS "board;radio;arch:${LEPTON_CPU};backend:${LEPTON_KAL_BACKEND}"
-                       TIMEOUT 300 RUN_SERIAL TRUE ENVIRONMENT PYTHONDONTWRITEBYTECODE=1)
-endif()
+# test radio entre deux cartes (nucleo-wl55jc1.radio, variables LEPTON_RADIO_PEER_*) : répertoire
+# tests/ du BSP, champ « tests » du manifeste (TST-2, ENV-32)

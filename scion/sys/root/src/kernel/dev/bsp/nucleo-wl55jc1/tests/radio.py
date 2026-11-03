@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""board_radio.py — test radio entre deux cartes (étape 6, NUCLEO-WL55JC1, FSK 868 MHz).
+"""radio.py — test radio entre deux cartes (étape 6, NUCLEO-WL55JC1, FSK 868 MHz).
+
+Test du BSP nucleo-wl55jc1 (TST-2, ENV-32 ; tests/board_radio.py du greffon noyau auparavant).
+La console est celle de smoke_lsh.py du greffon noyau, désigné par --tests-noyau (le script est
+greffé en lien : son répertoire n'est pas celui du noyau).
 
 Deux cartes identiques, chacune avec sa console série et sa sonde ; la même image est flashée sur
 les deux (--reset-a, --reset-b). Dans l'ordre, sur /dev/radio (pilote du portage IAR) :
@@ -19,9 +23,6 @@ import shlex
 import subprocess
 import sys
 import time
-
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-from smoke_lsh import Console, SerialLink, PROMPT, run_command  # noqa: E402
 
 BOOT = re.compile(rb"any key to continue|lepton#\d+\$ ")
 
@@ -84,7 +85,9 @@ def fumee(tx, rx, nom):
 
 
 def main():
+    global Console, SerialLink, PROMPT, run_command
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--tests-noyau", required=True, help="répertoire tests/ du greffon noyau")
     ap.add_argument("--port-a", required=True)
     ap.add_argument("--port-b", required=True)
     ap.add_argument("--reset-a", required=True, help="flash et reset de la carte A")
@@ -94,6 +97,8 @@ def main():
     ap.add_argument("--baud", type=int, default=115200)
     ap.add_argument("--log", default="board_radio.log")
     a = ap.parse_args()
+    sys.path.insert(0, a.tests_noyau)
+    from smoke_lsh import Console, SerialLink, PROMPT, run_command  # noqa: E402
     echecs = []
     with open(a.log, "wb") as log:
         la, lb = SerialLink(a.port_a, a.baud), SerialLink(a.port_b, a.baud)
