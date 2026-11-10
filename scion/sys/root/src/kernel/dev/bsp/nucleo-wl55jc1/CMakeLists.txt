@@ -8,22 +8,10 @@ target_compile_definitions(lepton_options INTERFACE
   __KERNEL_CPU_DEVICE_NAME="${LEPTON_BOARD_UNAME_MACHINE}")
 
 # carte réelle : console série du STLINK-V3 et sonde OpenOCD. Deux cartes identiques sur le banc
-# (radio) : la sonde est choisie par son numéro de série. La cfg statique du BSP (champ openocd du
-# manifeste, posée par le lecteur dans LEPTON_BOARD_OPENOCD_CFG, autonome depuis ENV-9) est sourcée
-# par une cfg générée dans le répertoire de build, qui y ajoute le numéro de série et la remplace
-# pour la cible flash et les tests.
-set(LEPTON_BOARD_STLINK_SERIAL "" CACHE STRING
-    "Numéro de série du STLINK-V3 de la carte (vide : première sonde trouvée)")
-set(lepton_wl_cfg_bsp ${LEPTON_BOARD_OPENOCD_CFG})
-set(LEPTON_BOARD_OPENOCD_CFG ${CMAKE_BINARY_DIR}/openocd-nucleo-wl55jc1.cfg)
-if(LEPTON_BOARD_STLINK_SERIAL)
-  set(lepton_wl_serial "adapter serial ${LEPTON_BOARD_STLINK_SERIAL}\n")
-else()
-  set(lepton_wl_serial "")
-endif()
-file(WRITE ${LEPTON_BOARD_OPENOCD_CFG}
-  "# généré par le CMakeLists.txt du BSP nucleo-wl55jc1\n"
-  "source ${lepton_wl_cfg_bsp}\n${lepton_wl_serial}")
+# (radio) : la sonde est choisie par son numéro de série, LEPTON_BOARD_PROBE_SERIAL, commune à tous
+# les BSP depuis ENV-45 (lecteur du noyau, cmake/lepton_greffons.cmake : cfg générée
+# openocd-nucleo-wl55jc1.cfg dans LEPTON_BOARD_OPENOCD_CFG ; ancien nom LEPTON_BOARD_STLINK_SERIAL
+# encore accepté, obsolète).
 set(LEPTON_BOARD_SERIAL_PORT "" CACHE STRING
     "Port série de la console de la carte (ex. /dev/ttyACM0) : active le test de fumée sur carte")
 
